@@ -69,4 +69,13 @@ public class SolarEventCalculatorTest extends BaseTestCase {
         assertEquals(14, localTime.get(Calendar.HOUR_OF_DAY));
         assertEquals(0, localTime.get(Calendar.MINUTE));
     }
+
+    @Test
+    public void testAdjustForDST() {
+        // Antarctica/Troll: standard UTC+0, DST UTC+2 (savings = +2 h).
+        super.setup(Calendar.APRIL, 1, 2024, "-72.0117", "2.5350", "Antarctica/Troll");
+        SolarEventCalculator trollCalc = new SolarEventCalculator(location, "Antarctica/Troll");
+        assertEquals("08:43", trollCalc.computeSunriseTime(Zenith.OFFICIAL, eventDate));
+        assertEquals("19:02", trollCalc.computeSunsetTime(Zenith.OFFICIAL, eventDate));
+    }
 }
