@@ -282,7 +282,9 @@ public class SolarEventCalculator {
     private BigDecimal adjustForDST(BigDecimal localMeanTime, Calendar date) {
         BigDecimal localTime = localMeanTime;
         if (timeZone.inDaylightTime(date.getTime())) {
-            localTime = localTime.add(BigDecimal.ONE);
+            long dstMillis = timeZone.getOffset(date.getTimeInMillis()) - timeZone.getRawOffset();
+            BigDecimal dstSavings = divideBy(BigDecimal.valueOf(dstMillis), BigDecimal.valueOf(3600000));
+            localTime = localTime.add(dstSavings);
         }
         if (localTime.doubleValue() > 24.0) {
             localTime = localTime.subtract(BigDecimal.valueOf(24));
