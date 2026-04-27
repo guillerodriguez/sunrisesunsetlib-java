@@ -19,6 +19,7 @@ package com.luckycatlabs.sunrisesunset;
 import static org.junit.Assert.assertEquals;
 
 import java.util.Calendar;
+import java.util.TimeZone;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -78,6 +79,35 @@ public class SunriseSunsetCalculatorTest extends BaseTestCase {
     @Test
     public void testComputeOfficialSunset() {
         assertTimeEquals("18:00", calc.getOfficialSunsetForDate(eventDate), eventDate.getTime().toString());
+    }
+
+    @Test
+    public void testComputeSunriseArbitraryDegrees() {
+        TimeZone tz = TimeZone.getTimeZone("America/New_York");
+
+        assertHourMinuteEquals(calc.getCivilSunriseCalendarForDate(eventDate),
+                SunriseSunsetCalculator.getSunrise(39.9937, -75.7850, tz, eventDate, 6.0));
+        assertHourMinuteEquals(calc.getNauticalSunriseCalendarForDate(eventDate),
+                SunriseSunsetCalculator.getSunrise(39.9937, -75.7850, tz, eventDate, 12.0));
+        assertHourMinuteEquals(calc.getAstronomicalSunriseCalendarForDate(eventDate),
+                SunriseSunsetCalculator.getSunrise(39.9937, -75.7850, tz, eventDate, 18.0));
+    }
+
+    @Test
+    public void testComputeSunsetArbitraryDegrees() {
+        TimeZone tz = TimeZone.getTimeZone("America/New_York");
+
+        assertHourMinuteEquals(calc.getCivilSunsetCalendarForDate(eventDate),
+                SunriseSunsetCalculator.getSunset(39.9937, -75.7850, tz, eventDate, 6.0));
+        assertHourMinuteEquals(calc.getNauticalSunsetCalendarForDate(eventDate),
+                SunriseSunsetCalculator.getSunset(39.9937, -75.7850, tz, eventDate, 12.0));
+        assertHourMinuteEquals(calc.getAstronomicalSunsetCalendarForDate(eventDate),
+                SunriseSunsetCalculator.getSunset(39.9937, -75.7850, tz, eventDate, 18.0));
+    }
+
+    private static void assertHourMinuteEquals(Calendar expected, Calendar actual) {
+        assertEquals(expected.get(Calendar.HOUR_OF_DAY), actual.get(Calendar.HOUR_OF_DAY));
+        assertEquals(expected.get(Calendar.MINUTE), actual.get(Calendar.MINUTE));
     }
 
     @Test
