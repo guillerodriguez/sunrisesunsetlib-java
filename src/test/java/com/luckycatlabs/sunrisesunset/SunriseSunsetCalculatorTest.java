@@ -161,4 +161,56 @@ public class SunriseSunsetCalculatorTest extends BaseTestCase {
         assertEquals("08:29", calc.getOfficialSunriseForDate(calendar));
         assertEquals("17:42", calc.getOfficialSunsetForDate(calendar));
     }
+
+    @Test
+    public void testSunriseOnDSTStartDay() {
+        // 2024-03-10 in NYC: DST starts at 02:00 EST -> 03:00 EDT.
+        // Sunrise is at ~07:30 EDT (post-transition).
+        // Passing a Calendar set to 00:30 EST (pre-transition) must not
+        // throw away the DST adjustment.
+        Location loc = new Location("39.9937", "-75.7850");
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(loc, "America/New_York");
+        Calendar calBeforeTransition = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
+        calBeforeTransition.set(2024, Calendar.MARCH, 10, 0, 30, 0);
+
+        // Cross-check against a "safe" Calendar (post-transition same day).
+        Calendar calAfterTransition = (Calendar) calBeforeTransition.clone();
+        calAfterTransition.set(Calendar.HOUR_OF_DAY, 12);
+
+        assertEquals(calc.getOfficialSunriseForDate(calAfterTransition), calc.getOfficialSunriseForDate(calBeforeTransition));
+    }
+
+    @Test
+    public void testSunriseOnDSTEndDay() {
+        // 2024-11-03 in NYC: DST ends at 02:00 EDT -> 01:00 EST.
+        // Sunrise is at ~06:27 EST (post-transition).
+        // Passing a Calendar set to 00:30 EDT (pre-transition, DST still in
+        // effect) must not add a stale DST adjustment.
+        Location loc = new Location("39.9937", "-75.7850");
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(loc, "America/New_York");
+        Calendar calBeforeTransition = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
+        calBeforeTransition.set(2024, Calendar.NOVEMBER, 3, 0, 30, 0);
+
+        Calendar calAfterTransition = (Calendar) calBeforeTransition.clone();
+        calAfterTransition.set(Calendar.HOUR_OF_DAY, 12);
+
+        assertEquals(calc.getOfficialSunriseForDate(calAfterTransition), calc.getOfficialSunriseForDate(calBeforeTransition));
+    }
+
+    @Test
+    public void testSunriseOnHalfHourDSTStartDay() {
+        // 2024-10-06 in Lord_Howe: DST starts at 02:00 +1030 -> 02:30 +11
+        // (savings = 30 min). Sunrise is post-transition.
+        // The sub-hour savings amount must be honored when the caller's
+        // Calendar straddles the transition.
+        Location loc = new Location("-31.5533", "159.0820");
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(loc, "Australia/Lord_Howe");
+        Calendar calBeforeTransition = Calendar.getInstance(TimeZone.getTimeZone("Australia/Lord_Howe"));
+        calBeforeTransition.set(2024, Calendar.OCTOBER, 6, 0, 30, 0);
+
+        Calendar calAfterTransition = (Calendar) calBeforeTransition.clone();
+        calAfterTransition.set(Calendar.HOUR_OF_DAY, 12);
+
+        assertEquals(calc.getOfficialSunriseForDate(calAfterTransition), calc.getOfficialSunriseForDate(calBeforeTransition));
+    }
 }

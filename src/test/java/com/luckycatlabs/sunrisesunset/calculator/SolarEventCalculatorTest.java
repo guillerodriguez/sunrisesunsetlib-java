@@ -71,7 +71,7 @@ public class SolarEventCalculatorTest extends BaseTestCase {
     }
 
     @Test
-    public void testAdjustForDST() {
+    public void testNonStandardDSTSavings() {
         // Antarctica/Troll: standard UTC+0, DST UTC+2 (savings = +2 h).
         super.setup(Calendar.APRIL, 1, 2024, "-72.0117", "2.5350", "Antarctica/Troll");
         SolarEventCalculator trollCalc = new SolarEventCalculator(location, "Antarctica/Troll");

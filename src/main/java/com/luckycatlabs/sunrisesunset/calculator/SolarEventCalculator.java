@@ -17,7 +17,6 @@
 package com.luckycatlabs.sunrisesunset.calculator;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.Calendar;
 import java.util.TimeZone;
@@ -274,22 +273,24 @@ public class SolarEventCalculator {
 
     private BigDecimal getLocalTime(BigDecimal localMeanTime, Calendar date) {
         BigDecimal utcTime = localMeanTime.subtract(getBaseLongitudeHour());
-        BigDecimal utcOffSet = getUTCOffSet(date);
-        BigDecimal utcOffSetTime = utcTime.add(utcOffSet);
-        return adjustForDST(utcOffSetTime, date);
-    }
 
-    private BigDecimal adjustForDST(BigDecimal localMeanTime, Calendar date) {
-        BigDecimal localTime = localMeanTime;
-        if (timeZone.inDaylightTime(date.getTime())) {
-            long dstMillis = timeZone.getOffset(date.getTimeInMillis()) - timeZone.getRawOffset();
-            BigDecimal dstSavings = divideBy(BigDecimal.valueOf(dstMillis), BigDecimal.valueOf(3600000));
-            localTime = localTime.add(dstSavings);
-        }
+        long eventMillisUtc = computeEventMillisUtc(date, utcTime);
+        BigDecimal offsetHours = divideBy(
+                BigDecimal.valueOf(timeZone.getOffset(eventMillisUtc)),
+                BigDecimal.valueOf(3600000L));
+        BigDecimal localTime = utcTime.add(offsetHours);
+
         if (localTime.doubleValue() > 24.0) {
             localTime = localTime.subtract(BigDecimal.valueOf(24));
         }
         return localTime;
+    }
+
+    private long computeEventMillisUtc(Calendar date, BigDecimal utcHourOfDay) {
+        Calendar utcMidnight = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        utcMidnight.clear();
+        utcMidnight.set(date.get(Calendar.YEAR), date.get(Calendar.MONTH), date.get(Calendar.DAY_OF_MONTH));
+        return utcMidnight.getTimeInMillis() + utcHourOfDay.multiply(BigDecimal.valueOf(3600000L)).longValue();
     }
 
     /**
@@ -373,12 +374,6 @@ public class SolarEventCalculator {
 
     private BigDecimal getDayOfYear(Calendar date) {
         return new BigDecimal(date.get(Calendar.DAY_OF_YEAR));
-    }
-
-    private BigDecimal getUTCOffSet(Calendar date) {
-        BigDecimal offSetInMillis = new BigDecimal(date.get(Calendar.ZONE_OFFSET));
-        BigDecimal offSet = divideBy(offSetInMillis, BigDecimal.valueOf(3600000));
-        return offSet;
     }
 
     private BigDecimal getArcCosineFor(BigDecimal radians) {
