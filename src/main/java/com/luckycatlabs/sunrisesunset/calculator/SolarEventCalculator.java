@@ -377,7 +377,7 @@ public class SolarEventCalculator {
 
     private BigDecimal getUTCOffSet(Calendar date) {
         BigDecimal offSetInMillis = new BigDecimal(date.get(Calendar.ZONE_OFFSET));
-        BigDecimal offSet = offSetInMillis.divide(new BigDecimal(3600000), new MathContext(2));
+        BigDecimal offSet = divideBy(offSetInMillis, BigDecimal.valueOf(3600000));
         return offSet;
     }
 

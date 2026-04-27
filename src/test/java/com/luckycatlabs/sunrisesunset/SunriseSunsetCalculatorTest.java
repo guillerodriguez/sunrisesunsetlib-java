@@ -108,4 +108,27 @@ public class SunriseSunsetCalculatorTest extends BaseTestCase {
         String officialSunriseForDate = calculator.getOfficialSunriseForDate(calendar);
         assertEquals("06:19", officialSunriseForDate);
     }
+
+    @Test
+    public void testNonIntegerTimezoneOffset2() {
+        // Asia/Kathmandu (+5:45, no DST)
+        Location kathmandu = new Location("27.7172", "85.3240");
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(kathmandu, "Asia/Kathmandu");
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(2024, Calendar.JUNE, 15);
+
+        assertEquals("05:08", calc.getOfficialSunriseForDate(calendar));
+        assertEquals("19:01", calc.getOfficialSunsetForDate(calendar));
+
+        // Pacific/Chatham (+12:45), outside DST window (July is southern winter)
+        Location chatham = new Location("-43.8800", "176.3200");
+        calc = new SunriseSunsetCalculator(chatham, "Pacific/Chatham");
+
+        calendar = Calendar.getInstance();
+        calendar.set(2024, Calendar.JULY, 15);
+
+        assertEquals("08:29", calc.getOfficialSunriseForDate(calendar));
+        assertEquals("17:42", calc.getOfficialSunsetForDate(calendar));
+    }
 }
