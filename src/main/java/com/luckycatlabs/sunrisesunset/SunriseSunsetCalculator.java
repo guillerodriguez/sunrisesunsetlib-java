@@ -255,7 +255,7 @@ public class SunriseSunsetCalculator {
 
     public static Calendar getSunrise(double latitude, double longitude, TimeZone timeZone, Calendar date, double degrees) {
         SolarEventCalculator solarEventCalculator = new SolarEventCalculator(new Location(latitude, longitude), timeZone);
-        return solarEventCalculator.computeSunriseCalendar(new Zenith(90 - degrees), date);
+        return solarEventCalculator.computeSunriseCalendar(new Zenith(90 + degrees), date);
     }
 
     /**
@@ -276,7 +276,7 @@ public class SunriseSunsetCalculator {
 
     public static Calendar getSunset(double latitude, double longitude, TimeZone timeZone, Calendar date, double degrees) {
         SolarEventCalculator solarEventCalculator = new SolarEventCalculator(new Location(latitude, longitude), timeZone);
-        return solarEventCalculator.computeSunsetCalendar(new Zenith(90 - degrees), date);
+        return solarEventCalculator.computeSunsetCalendar(new Zenith(90 + degrees), date);
     }
 
     /**
