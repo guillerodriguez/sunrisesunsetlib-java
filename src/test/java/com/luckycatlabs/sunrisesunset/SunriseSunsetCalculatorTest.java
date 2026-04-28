@@ -213,4 +213,30 @@ public class SunriseSunsetCalculatorTest extends BaseTestCase {
 
         assertEquals(calc.getOfficialSunriseForDate(calAfterTransition), calc.getOfficialSunriseForDate(calBeforeTransition));
     }
+
+    @Test
+    public void testCrossTimezoneInputDoesNotShiftDay() {
+        // The calendar date is identified by the input Calendar's wall-clock
+        // year/month/day in its own TZ. A UTC-tagged Calendar for 2024-03-10
+        // must yield the same result as an NYC-tagged Calendar for the same
+        // calendar date, and the caller's Calendar must not be mutated.
+        Location nyc = new Location("40.7128", "-74.0060");
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(nyc, "America/New_York");
+
+        Calendar nycCal = Calendar.getInstance(TimeZone.getTimeZone("America/New_York"));
+        nycCal.set(2024, Calendar.MARCH, 10, 0, 0, 0);
+
+        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        utcCal.set(2024, Calendar.MARCH, 10, 0, 0, 0);
+        // To reproduce the bug, make sure Calendar is in isTimeSet=true state,
+        // otherwise, the lazy-evaluation behavior would mask the issue.
+        utcCal.getTimeInMillis();
+        String utcCalTzIdBefore = utcCal.getTimeZone().getID();
+
+        String nycResult = calc.getOfficialSunriseForDate(nycCal);
+        String utcResult = calc.getOfficialSunriseForDate(utcCal);
+
+        assertEquals("cross-TZ inputs must yield same result", nycResult, utcResult);
+        assertEquals("caller Calendar TZ must not be mutated", utcCalTzIdBefore, utcCal.getTimeZone().getID());
+    }
 }

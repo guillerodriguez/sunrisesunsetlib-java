@@ -113,7 +113,6 @@ public class SolarEventCalculator {
     }
 
     private BigDecimal computeSolarEventTime(Zenith solarZenith, Calendar date, boolean isSunrise) {
-        date.setTimeZone(this.timeZone);
         BigDecimal longitudeHour = getLongitudeHour(date, isSunrise);
 
         BigDecimal meanAnomaly = getMeanAnomaly(longitudeHour);
@@ -339,13 +338,11 @@ public class SolarEventCalculator {
             return null;
         }
 
-        // Create a clone of the input calendar so we get locale/timezone information.
-        Calendar resultTime = (Calendar) date.clone();
-
         BigDecimal localTime = localTimeParam;
+        int dayOffset = 0;
         if (localTime.compareTo(BigDecimal.ZERO) == -1) {
             localTime = localTime.add(BigDecimal.valueOf(24.0D));
-            resultTime.add(Calendar.HOUR_OF_DAY, -24);
+            dayOffset = -1;
         }
         String[] timeComponents = localTime.toPlainString().split("\\.");
         int hour = Integer.parseInt(timeComponents[0]);
@@ -360,13 +357,18 @@ public class SolarEventCalculator {
             hour = 0;
         }
 
-        // Set the local time
-        resultTime.set(Calendar.HOUR_OF_DAY, hour);
-        resultTime.set(Calendar.MINUTE, minutes.intValue());
-        resultTime.set(Calendar.SECOND, 0);
-        resultTime.set(Calendar.MILLISECOND, 0);
-        resultTime.setTimeZone(date.getTimeZone());
-
+        // Clone to preserve the input's locale, then clear and re-populate
+        // explicitly in the calculator's TZ.
+        Calendar resultTime = (Calendar) date.clone();
+        resultTime.clear();
+        resultTime.setTimeZone(this.timeZone);
+        resultTime.set(date.get(Calendar.YEAR),
+                       date.get(Calendar.MONTH),
+                       date.get(Calendar.DAY_OF_MONTH),
+                       hour, minutes.intValue(), 0);
+        if (dayOffset != 0) {
+            resultTime.add(Calendar.DAY_OF_MONTH, dayOffset);
+        }
         return resultTime;
     }
 
