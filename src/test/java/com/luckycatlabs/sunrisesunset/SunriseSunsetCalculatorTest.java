@@ -239,4 +239,26 @@ public class SunriseSunsetCalculatorTest extends BaseTestCase {
         assertEquals("cross-TZ inputs must yield same result", nycResult, utcResult);
         assertEquals("caller Calendar TZ must not be mutated", utcCalTzIdBefore, utcCal.getTimeZone().getID());
     }
+
+    @Test
+    public void testSunsetAfterCalculatorMidnightCarriesToNextDay() {
+        // When the sunset lands after midnight in the calculator's TZ, the
+        // returned Calendar should be on the next day.
+        // Philadelphia at -75°W with a UTC calculator on 2018-05-18:
+        // sunset is at ~00:12 UTC on 2018-05-19.
+        Location philadelphia = new Location("39.9522222", "-75.1641667");
+        SunriseSunsetCalculator calc = new SunriseSunsetCalculator(philadelphia, "UTC");
+
+        Calendar input = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        input.set(2018, Calendar.MAY, 18, 0, 0, 0);
+
+        Calendar sunset = calc.getOfficialSunsetCalendarForDate(input);
+
+        assertEquals("UTC", sunset.getTimeZone().getID());
+        assertEquals(2018, sunset.get(Calendar.YEAR));
+        assertEquals(Calendar.MAY, sunset.get(Calendar.MONTH));
+        assertEquals(19, sunset.get(Calendar.DAY_OF_MONTH));
+        assertEquals(0, sunset.get(Calendar.HOUR_OF_DAY));
+        assertEquals(12, sunset.get(Calendar.MINUTE));
+    }
 }

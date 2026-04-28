@@ -278,10 +278,6 @@ public class SolarEventCalculator {
                 BigDecimal.valueOf(timeZone.getOffset(eventMillisUtc)),
                 BigDecimal.valueOf(3600000L));
         BigDecimal localTime = utcTime.add(offsetHours);
-
-        if (localTime.doubleValue() > 24.0) {
-            localTime = localTime.subtract(BigDecimal.valueOf(24));
-        }
         return localTime;
     }
 
@@ -307,6 +303,8 @@ public class SolarEventCalculator {
         BigDecimal localTime = localTimeParam;
         if (localTime.compareTo(BigDecimal.ZERO) == -1) {
             localTime = localTime.add(BigDecimal.valueOf(24.0D));
+        } else if (localTime.compareTo(BigDecimal.valueOf(24.0D)) > 0) {
+            localTime = localTime.subtract(BigDecimal.valueOf(24.0D));
         }
         String[] timeComponents = localTime.toPlainString().split("\\.");
         int hour = Integer.parseInt(timeComponents[0]);
@@ -343,6 +341,9 @@ public class SolarEventCalculator {
         if (localTime.compareTo(BigDecimal.ZERO) == -1) {
             localTime = localTime.add(BigDecimal.valueOf(24.0D));
             dayOffset = -1;
+        } else if (localTime.compareTo(BigDecimal.valueOf(24.0D)) > 0) {
+            localTime = localTime.subtract(BigDecimal.valueOf(24.0D));
+            dayOffset = +1;
         }
         String[] timeComponents = localTime.toPlainString().split("\\.");
         int hour = Integer.parseInt(timeComponents[0]);
@@ -355,6 +356,7 @@ public class SolarEventCalculator {
         }
         if (hour == 24) {
             hour = 0;
+            dayOffset += 1;
         }
 
         // Clone to preserve the input's locale, then clear and re-populate
